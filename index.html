@@ -1,995 +1,628 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مختبر الرسم الهندسي 3D - استنتاج المساقط الثلاثة</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Cairo & Tajawal -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- Three.js & OrbitControls -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
-    <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #0f172a;
-            background-image: radial-gradient(ellipse at 12% 0%, rgba(37, 99, 235, .15), transparent 34%), radial-gradient(ellipse at 88% 22%, rgba(14, 165, 233, .09), transparent 30%);
-            color: #f8fafc;
-            overflow-x: hidden;
-        }
-
-        .premium-panel { box-shadow: 0 24px 70px rgba(2, 6, 23, .38), 0 1px 0 rgba(148, 163, 184, .08) inset; }
-        .site-footer { position: relative; isolation: isolate; background: linear-gradient(115deg, #0b1224 0%, #111c35 48%, #0b1224 100%); }
-        .site-footer::before { content: ''; position: absolute; z-index: -1; inset: 0 10% auto; height: 1px; background: linear-gradient(90deg, transparent, #60a5fa, #a78bfa, transparent); }
-        .footer-mark { background: linear-gradient(145deg, #3b82f6, #7c3aed); box-shadow: 0 8px 24px rgba(59, 130, 246, .28); }
-
-        /* Engineering Blueprint Grid Background for 2D SVG */
-        .blueprint-sheet {
-            background-color: #ffffff;
-            background-image: 
-                linear-gradient(to right, rgba(59, 130, 246, 0.08) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(59, 130, 246, 0.08) 1px, transparent 1px);
-            background-size: 16px 16px;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1e293b;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 9999px;
-        }
-
-        /* SVG Engineering Drawing Styles */
-        .cad-visible {
-            stroke: #0f172a;
-            stroke-width: 1.8;
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-        .cad-fill {
-            fill: #f1f5f9;
-            stroke: #0f172a;
-            stroke-width: 1.8;
-            stroke-linejoin: round;
-        }
-        .cad-hidden {
-            stroke: #dc2626;
-            stroke-width: 1.3;
-            stroke-dasharray: 4, 3;
-            fill: none;
-        }
-        .cad-center {
-            stroke: #2563eb;
-            stroke-width: 1.0;
-            stroke-dasharray: 8, 2, 2, 2;
-            fill: none;
-        }
-        .cad-dim-line {
-            stroke: #059669;
-            stroke-width: 0.9;
-            fill: none;
-        }
-        .cad-dim-text {
-            fill: #047857;
-            font-family: 'Cairo', sans-serif;
-            font-size: 9px;
-            font-weight: 700;
-        }
-        .view-box-highlight {
-            transition: all 0.35s ease;
-        }
-        .view-active-ring {
-            stroke: #3b82f6;
-            stroke-width: 2.5;
-            fill: rgba(59, 130, 246, 0.06);
-        }
-
-        #canvas-container canvas {
-            display: block;
-            width: 100% !important;
-            height: 100% !important;
-            outline: none;
-        }
-        .projection-focus #projections-svg { max-height: min(72vh, 760px); }
-        .projection-focus .projection-view-muted { display: none; }
-        .projection-focus .projection-helper { display: none; }
-        @media (max-width: 640px) {
-            #canvas-container { height: min(62vh, 420px); min-height: 300px; }
-            .blueprint-sheet { border-radius: 0.75rem; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06080f">
+<title>مختبر الرسم الهندسي 3D - استنتاج المساقط الثلاثة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#06080f;--panel:rgba(15,21,38,.78);--line:rgba(217,180,91,.24);--gold:#d9b45b;--gold2:#f3d98f;--ink:#ece8dc;--mut:#9aa3b8;--paper:#fbfaf5}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Cairo',system-ui,sans-serif;color:var(--ink);line-height:1.65;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;overflow-x:hidden;
+ background:radial-gradient(1100px 560px at 85% -8%,rgba(217,180,91,.13),transparent 60%),radial-gradient(900px 520px at -5% 105%,rgba(70,100,200,.14),transparent 60%),var(--bg)}
+button{font-family:inherit;cursor:pointer;color:inherit}
+/* header */
+.hdr{position:sticky;top:0;z-index:40;background:rgba(6,8,15,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:10px max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left))}
+.hdr-in{max-width:1680px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:46px;height:46px;border-radius:14px;flex:none;display:grid;place-items:center;background:linear-gradient(145deg,#f3d98f,#b8892f);box-shadow:0 8px 24px -6px rgba(217,180,91,.55),inset 0 1px 0 rgba(255,255,255,.5)}
+.logo svg{width:26px;height:26px;stroke:#1a1305}
+.brand h1{font-size:clamp(15px,2.2vw,22px);font-weight:800;line-height:1.25;background:linear-gradient(90deg,#fff3cf,#e2bd6a 55%,#fff3cf);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{font-size:12px;color:var(--mut)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:999px;font-size:13px;font-weight:700;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--gold2);transition:.2s}
+.btn:hover{background:rgba(217,180,91,.12);border-color:rgba(217,180,91,.5)}
+.btn.active{background:linear-gradient(135deg,#f3d98f,#c99a3c);color:#1a1305;border-color:transparent;box-shadow:0 6px 20px -6px rgba(217,180,91,.6)}
+.btn svg{width:16px;height:16px}
+/* layout */
+.layout{flex:1;width:100%;max-width:1680px;margin:auto;padding:20px max(20px,env(safe-area-inset-right)) 26px max(20px,env(safe-area-inset-left));display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:1040px){.layout{grid-template-columns:minmax(0,1.5fr) minmax(380px,1fr);align-items:start}.sheet{position:sticky;top:84px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;backdrop-filter:blur(14px);box-shadow:0 40px 90px -40px #000,inset 0 1px 0 rgba(255,255,255,.05)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(217,180,91,.07),transparent)}
+.bar h2{font-size:14px;font-weight:800;color:var(--gold2);display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{padding:8px 14px;border-radius:12px;font-size:13px;font-weight:700;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:#d8dbe6;transition:.2s}
+.tab:hover{border-color:var(--line)}
+.tab.active{background:linear-gradient(135deg,#f3d98f,#c99a3c);color:#1a1305;border-color:transparent}
+/* stage */
+.stage{position:relative;height:clamp(340px,62vh,680px);background:radial-gradient(ellipse at 50% 30%,#1c2744 0%,#0d1326 55%,#070a14 100%);overflow:hidden;scroll-margin-top:76px}
+#canvas-container{position:absolute;inset:0}
+#canvas-container canvas{display:block;width:100%;height:100%;outline:none;cursor:grab}
+.nogl{padding:40px 20px;text-align:center;color:var(--mut)}
+.hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;color:#e9dfc2;background:rgba(6,8,15,.7);border:1px solid var(--line);backdrop-filter:blur(8px);pointer-events:none;transition:opacity .6s;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+.hint.gone,body.touring .hint{opacity:0}
+.hover-badge{position:absolute;bottom:14px;left:50%;transform:translateX(-50%) translateY(8px);opacity:0;padding:7px 18px;border-radius:999px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#f3d98f,#c99a3c);color:#1a1305;pointer-events:none;transition:.2s}
+.hover-badge.show{opacity:1;transform:translateX(-50%)}
+/* tour bar */
+.tour{position:absolute;left:12px;right:12px;bottom:12px;padding:12px 14px;border-radius:16px;background:rgba(6,8,15,.82);border:1px solid var(--line);backdrop-filter:blur(12px);display:flex;align-items:center;gap:12px;opacity:0;transform:translateY(14px);pointer-events:none;transition:.4s;z-index:4}
+.tour.show{opacity:1;transform:none;pointer-events:auto}
+.tour-chip{--c:#fff;flex:none;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:800;color:#0b0f1c;background:var(--c)}
+.tour-text{flex:1;font-size:13.5px;font-weight:600;line-height:1.55;min-width:0}
+.dots{display:flex;gap:5px;flex:none}.dots i{width:22px;height:5px;border-radius:5px;background:rgba(255,255,255,.18);transition:.3s}.dots i.on{background:var(--gold)}
+.tour-n{font-size:12px;color:var(--mut);flex:none}
+.skip{flex:none;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:700;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
+/* 2D overlay */
+.v2d{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;background:var(--paper);opacity:0;pointer-events:none;transition:opacity .6s}
+.v2d.show{opacity:1;pointer-events:auto}
+.v2d-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 12px;background:#0b1020;border-bottom:2px solid var(--gold)}
+.badge2d{--c:#fff;flex:none;min-width:44px;height:34px;padding:0 10px;display:grid;place-items:center;border-radius:10px;background:var(--c);color:#0b0f1c;font-weight:800;font-size:14px}
+.v2d-head h3{font-size:15px;font-weight:800;color:#fff;line-height:1.2}.v2d-head small{display:block;font-size:11px;color:var(--mut);font-weight:600}
+.v2d-head .sp{flex:1}
+.v2d-head .btn{padding:7px 13px;font-size:12px}
+.v2d-body{flex:1;min-height:0;padding:8px;background-color:var(--paper);background-image:linear-gradient(rgba(70,100,160,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(70,100,160,.09) 1px,transparent 1px);background-size:18px 18px;display:flex}
+#v2d-svg{width:100%;height:100%;display:block;direction:ltr}
+.v2d-foot{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;padding:7px 14px;background:#f1eee2;border-top:1px solid #d8cfae;font-size:12px;font-weight:700;color:#3a4358}
+.v2d-foot span{display:inline-flex;align-items:center;gap:6px}.v2d-foot svg{width:26px;height:8px}
+.v2d-foot .note{margin-inline-start:auto;color:#7a5c14}
+/* info */
+.info{padding:16px 18px 18px;border-top:1px solid var(--line)}
+.info-top{display:flex;gap:14px;align-items:flex-start}
+.exp-icon{--c:#d9b45b;flex:none;min-width:48px;height:48px;padding:0 8px;display:grid;place-items:center;border-radius:14px;font-weight:800;font-size:13px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
+.info h3{font-size:16px;font-weight:800;color:#fff}.info p{font-size:13.5px;color:#c4c8d6;margin-top:3px}
+.info h4{margin:14px 0 6px;font-size:13px;font-weight:800;color:var(--gold2)}
+.info ol{list-style:none;counter-reset:s;display:grid;gap:7px}
+.info li{counter-increment:s;display:flex;gap:10px;font-size:13.5px;color:#dfe2ec;align-items:flex-start}
+.info li::before{content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;background:linear-gradient(135deg,#f3d98f,#c99a3c);color:#1a1305;margin-top:2px}
+/* sheet */
+.legend{display:flex;gap:12px;font-size:11px;color:#c9cdda;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:5px}.legend svg{width:22px;height:6px}
+.paper{margin:14px;border-radius:14px;overflow:hidden;border:1px solid #cdbf93;box-shadow:0 20px 50px -25px #000;background-color:var(--paper);background-image:linear-gradient(rgba(70,100,160,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(70,100,160,.08) 1px,transparent 1px);background-size:16px 16px}
+.sheet-svg{display:block;width:100%;height:auto}
+.qbar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 14px}
+.qbtn{padding:10px 6px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);text-align:center;transition:.2s}
+.qbtn b{display:block;font-size:13px;font-weight:800}.qbtn small{font-size:11px;color:var(--mut)}
+.qbtn:hover,.qbtn.active{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+/* SVG drawing styles */
+.cad-fill{fill:#fff;stroke:#0b1220;stroke-width:1.8px;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.cad-vis{stroke:#0b1220;stroke-width:1.8px;fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.cad-hid{stroke:#d1365b;stroke-width:1.3px;stroke-dasharray:5 3.5;fill:none;vector-effect:non-scaling-stroke}
+.cad-ctr{stroke:#2563eb;stroke-width:1px;stroke-dasharray:9 2.5 2 2.5;fill:none;vector-effect:non-scaling-stroke}
+.cad-dim{stroke:#0f8a62;stroke-width:1px;fill:none;vector-effect:non-scaling-stroke}
+.cad-ext{stroke:#0f8a62;stroke-width:.8px;fill:none;vector-effect:non-scaling-stroke}
+.cad-txt{fill:#0b6e4f;font-family:'Cairo',sans-serif;font-weight:700}
+.v-title{font-family:'Cairo',sans-serif;font-size:6.6px;font-weight:800;fill:#7a5c14}
+.vgrp{cursor:pointer}
+.v-ring{fill:rgba(217,180,91,0);stroke:transparent;stroke-width:1.6px;stroke-dasharray:5 4;vector-effect:non-scaling-stroke;transition:.25s}
+.vgrp:hover .v-ring{fill:rgba(217,180,91,.07);stroke:#c99a3c}
+.vgrp.active .v-ring{fill:rgba(217,180,91,.12);stroke:#b8892f;stroke-dasharray:none}
+.no-dims .dim-layer{display:none}
+/* footer */
+.ftr{border-top:1px solid var(--line);padding:14px;text-align:center;font-size:13px;font-weight:700;color:#cfc7b0;background:rgba(6,8,15,.7);padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.ftr span{background:linear-gradient(90deg,#fff3cf,#e2bd6a);-webkit-background-clip:text;background-clip:text;color:transparent}
+::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-thumb{background:#3b3a33;border-radius:9px}
+/* mobile */
+@media(max-width:640px){
+ .layout{padding:8px 0 16px;gap:12px}
+ .panel{border-radius:0;border-left:0;border-right:0}
+ .brand p{display:none}.logo{width:40px;height:40px}
+ .acts{width:100%}.acts .btn{flex:1;justify-content:center;padding:9px 8px;font-size:12px}
+ .bar{padding:10px}.bar h2{font-size:12.5px;width:100%}
+ .tabs{width:100%;display:grid;grid-template-columns:repeat(4,1fr)}.tab{padding:10px 2px;font-size:12px;text-align:center}
+ .stage{height:clamp(340px,60vh,520px)}
+ .tour{left:8px;right:8px;bottom:8px;flex-wrap:wrap;padding:10px}.tour-text{flex-basis:100%;order:3;font-size:13px}
+ .v2d-head{gap:8px;padding:8px}.v2d-head h3{font-size:14px}.v2d-head .btn{padding:6px 10px;font-size:11.5px}.v2d-head .sp{display:none}.v2d-head>div:nth-child(2){flex:1}
+ .v2d-foot .note{margin:0;flex-basis:100%}
+ .paper{margin:10px 8px}.qbar{padding:0 8px 12px}.info{padding:14px}
+}
+@media(max-height:480px) and (orientation:landscape){.stage{height:calc(100vh - 70px)}}
+</style>
 </head>
-<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 select-none">
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="arr" viewBox="0 0 10 6" refX="10" refY="3" markerUnits="userSpaceOnUse" markerWidth="4.2" markerHeight="2.5" orient="auto-start-reverse"><path d="M0,0L10,3L0,6z" fill="#0f8a62"/></marker></defs></svg>
 
-    <!-- Top Navigation / Header -->
-    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight">مختبر الرسم الهندسي التفاعلي 3D</h1>
-                    <p class="text-xs text-slate-400">استنتاج المساقط الثلاثة • اختر أي مسقط لعرضه مكبّرًا على ورقة 2D</p>
-                </div>
-            </div>
+<header class="hdr"><div class="hdr-in">
+  <div class="brand">
+    <div class="logo"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
+    <div><h1>مختبر الرسم الهندسي التفاعلي 3D</h1><p>استنتاج المساقط الثلاثة • الإسقاط الزاوي الأول</p></div>
+  </div>
+  <div class="acts">
+    <button class="btn" id="btn-xray"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12C3.7 8 7.5 5 12 5s8.3 3 9.5 7c-1.2 4-5 7-9.5 7s-8.3-3-9.5-7z"/></svg><span id="xray-label">إظهار الخطوط المخفية</span></button>
+    <button class="btn active" id="btn-dims"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8v8M21 8v8M3 12h18M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span id="dims-label">إخفاء الأبعاد</span></button>
+  </div>
+</div></header>
 
-            <!-- Action Controls -->
-            <div class="flex flex-wrap items-center gap-2">
-                <button id="btn-xray" onclick="toggleXRay()" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition flex items-center gap-1.5 shadow">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                    </svg>
-                    <span id="xray-label">وضع الأشعة X-Ray (الخطوط المخفية)</span>
-                </button>
-
-                <button id="btn-dims" onclick="toggleDimensions()" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold bg-emerald-950/70 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-700/50 transition flex items-center gap-1.5 shadow">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-                    </svg>
-                    <span id="dims-label">إخفاء الأبعاد</span>
-                </button>
-            </div>
+<main class="layout">
+  <section class="panel viewer">
+    <div class="bar">
+      <h2><span class="dot"></span>المجسم ثلاثي الأبعاد</h2>
+      <div class="tabs">
+        <button class="tab active" data-view="iso">منظور 3D</button>
+        <button class="tab" data-view="front">الرأسي</button>
+        <button class="tab" data-view="top">الأفقي</button>
+        <button class="tab" data-view="side">الجانبي</button>
+      </div>
+    </div>
+    <div class="stage" id="stage">
+      <div id="canvas-container"></div>
+      <div class="hint" id="hint">اسحب للتدوير • اضغط على سهم ملوّن لعرض المسقط</div>
+      <div class="hover-badge" id="hover-badge"></div>
+      <div class="tour" id="tour-bar">
+        <span class="tour-chip" id="tour-chip"></span>
+        <span class="dots" id="tour-dots"><i></i><i></i><i></i></span><span class="tour-n" id="tour-n">1/3</span>
+        <button class="skip" id="tour-skip">تخطي ⏭</button>
+        <div class="tour-text" id="tour-text"></div>
+      </div>
+      <div class="v2d" id="v2d">
+        <div class="v2d-head">
+          <div class="badge2d" id="v2d-badge">2D</div>
+          <div><h3 id="v2d-title"></h3><small id="v2d-en"></small></div>
+          <div class="sp"></div>
+          <button class="btn" id="v2d-replay">↻ إعادة الجولة</button>
+          <button class="btn active" id="v2d-back">↩ العودة للمجسم</button>
         </div>
-    </header>
-
-    <!-- Main Workspace Grid -->
-    <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-5 2xl:p-7 grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5">
-        
-        <!-- Left/Right Primary 3D Viewport (7 cols on desktop) -->
-        <section class="xl:col-span-7 flex flex-col bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden premium-panel">
-            <!-- View Selector Bar -->
-            <div class="bg-slate-800/80 px-3 py-2.5 border-b border-slate-700/80 flex flex-wrap items-center justify-between gap-2">
-                <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    المجسم ثلاثي الأبعاد (اسحب للتدوير • اضغط على الأسهم/الأوجه):
-                </span>
-                <div class="flex flex-wrap gap-1.5">
-                    <button onclick="setCameraView('iso')" id="view-btn-iso" class="view-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white shadow transition">
-                        منظور 3D
-                    </button>
-                    <button onclick="setCameraView('front')" id="view-btn-front" class="view-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-700 hover:bg-slate-600 text-slate-200 transition">
-                        المسقط الرأسي
-                    </button>
-                    <button onclick="setCameraView('top')" id="view-btn-top" class="view-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-700 hover:bg-slate-600 text-slate-200 transition">
-                        المسقط الأفقي
-                    </button>
-                    <button onclick="setCameraView('side')" id="view-btn-side" class="view-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-700 hover:bg-slate-600 text-slate-200 transition">
-                        المسقط الجانبي
-                    </button>
-                </div>
-            </div>
-
-            <!-- 3D Canvas Container -->
-            <div id="canvas-container" class="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] bg-gradient-to-b from-slate-900 to-slate-950 cursor-grab active:cursor-grabbing">
-                <!-- Floating Interactive Legend -->
-                <div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md border border-slate-700/70 rounded-xl p-2.5 text-[11px] text-slate-300 pointer-events-none space-y-1 shadow-lg">
-                    <div class="font-bold text-blue-400 mb-1">دليل التفاعل المباشر:</div>
-                    <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> السهم الأحمر: اتجاه المسقط الرأسي</div>
-                    <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> السهم الأخضر: اتجاه المسقط الأفقي</div>
-                    <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> السهم الأصفر: اتجاه المسقط الجانبي</div>
-                </div>
-
-                <!-- Floating Hover Tooltip -->
-                <div id="hover-badge" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 bg-blue-600/95 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg pointer-events-none transition">
-                    اضغط لعرض المسقط
-                </div>
-            </div>
-
-            <!-- Educational Explanation Box -->
-            <div id="explanation-card" class="p-4 bg-slate-900 border-t border-slate-800">
-                <div class="flex items-start gap-3">
-                    <div id="exp-icon" class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 font-extrabold text-sm border border-blue-500/30">
-                        3D
-                    </div>
-                    <div class="space-y-1">
-                        <h2 id="exp-title" class="text-sm sm:text-base font-extrabold text-white">المنظور الهندسي الأيزومتري (Isometric View)</h2>
-                        <p id="exp-desc" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                            هذه هي القطعة الميكانيكية بأبعادها الكاملة (<span class="text-blue-300 font-bold">125 × 62 × 74 مم</span>). يمكنك تدويرها بالماوس أو الإصبع، أو اختيار أي مسقط لعرض رسمه ثنائي الأبعاد مكبّرًا.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 2D Orthographic Projections Sheet (5 cols on desktop) -->
-        <section id="projection-panel" class="xl:col-span-5 flex flex-col bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden premium-panel">
-            <div class="bg-slate-800/80 px-4 py-2.5 border-b border-slate-700/80 flex flex-wrap items-center justify-between gap-2">
-                <h2 class="text-xs sm:text-sm font-extrabold text-white">لوحة استنتاج المساقط الثلاثة (2D)</h2>
-                <button id="projection-reset" onclick="showAllProjections()" class="hidden text-[11px] sm:text-xs font-bold text-blue-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10">عرض المساقط الثلاثة</button>
-                <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px]">
-                    <span class="flex items-center gap-1 text-slate-300"><span class="w-3 h-0.5 bg-slate-900 border border-white inline-block"></span> ظاهر</span>
-                    <span class="flex items-center gap-1 text-rose-400"><span class="w-3 h-0.5 border-b-2 border-dashed border-rose-500 inline-block"></span> مخفي</span>
-                    <span class="flex items-center gap-1 text-blue-400"><span class="w-3 h-0.5 border-b border-dashed border-blue-400 inline-block"></span> محور</span>
-                </div>
-            </div>
-
-            <!-- Interactive SVG Drawing Sheet -->
-            <div class="flex-1 p-3 flex items-center justify-center bg-slate-950/60">
-                <div class="w-full rounded-xl overflow-hidden border-2 border-slate-700 shadow-inner blueprint-sheet">
-                    <!-- First Angle Projection Layout:
-                         Top-Left: Front View (Elevation) - 125 wide x 74 high (62 + 12 heel)
-                         Top-Right: Left Side View - 62 wide x 74 high
-                         Bottom-Left: Top View (Plan) - 125 wide x 62 high
-                    -->
-                    <svg id="projections-svg" viewBox="0 0 280 238" class="w-full h-auto block" role="img" aria-label="رسم المساقط الهندسية ثنائية الأبعاد">
-                        <!-- Sheet Border -->
-                        <rect x="4" y="4" width="272" height="230" fill="none" stroke="#94a3b8" stroke-width="0.8"/>
-
-                        <!-- ========================================== -->
-                        <!-- 1. FRONT VIEW (المسقط الرأسي) - Top Left   -->
-                        <!-- Origin: X=28, Y=22 | Size: 125 x 74        -->
-                        <!-- Top Wall: Y=22..84 (62mm) | Heel: Y=84..96 (12mm) -->
-                        <!-- ========================================== -->
-                        <g id="svg-group-front" class="cursor-pointer projection-view" onclick="setCameraView('front')">
-                            <!-- Interactive Highlight Box -->
-                            <rect id="highlight-front" x="18" y="13" width="144" height="92" rx="4" fill="transparent" class="view-box-highlight"/>
-                            <text x="90.5" y="11" text-anchor="middle" fill="#1e3a8a" font-size="8" font-weight="800">المسقط الرأسي (Front)</text>
-
-                            <!-- Bottom Heel (الكعب السفلي 125 x 12: Y=84 to Y=96) -->
-                            <rect x="28" y="84" width="125" height="12" class="cad-fill"/>
-
-                            <!-- Main Back Wall Outline with Top Fillets R10 (Y=22 to Y=84) -->
-                            <path d="M 28 84 L 28 32 A 10 10 0 0 1 38 22 L 143 22 A 10 10 0 0 1 153 32 L 153 84 Z" class="cad-fill"/>
-
-                            <!-- Horizontal Base Top Edge (Height 12 above base bottom Y=84 -> Y = 72) -->
-                            <line x1="28" y1="72" x2="153" y2="72" class="cad-visible"/>
-
-                            <!-- Central Angled Rib (Width 12 centered at X = 90.5 -> X=84.5 to 96.5) -->
-                            <!-- 50 * tan(30°) = 28.87mm above base top Y=72 -> Y = 43.13 -->
-                            <rect x="84.5" y="43.1" width="12" height="28.9" class="cad-fill"/>
-
-                            <!-- Two Visible Holes in Vertical Wall (DIA 12 -> R=6)
-                                 X = 28 + 20 = 48 and X = 153 - 20 = 133
-                                 Y = 22 + 30 = 52 -->
-                            <circle cx="48" cy="52" r="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.6"/>
-                            <circle cx="133" cy="52" r="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.6"/>
-
-                            <!-- Centerlines for Wall Holes -->
-                            <line x1="39" y1="52" x2="57" y2="52" class="cad-center"/>
-                            <line x1="48" y1="43" x2="48" y2="61" class="cad-center"/>
-                            <line x1="124" y1="52" x2="142" y2="52" class="cad-center"/>
-                            <line x1="133" y1="43" x2="133" y2="61" class="cad-center"/>
-
-                            <!-- Main Vertical Symmetry Centerline -->
-                            <line x1="90.5" y1="18" x2="90.5" y2="99" class="cad-center"/>
-
-                            <!-- HIDDEN LINES (Dashed Red) -->
-                            <!-- 1. Base Holes (DIA 15 -> R=7.5) in Horizontal Base (Y=72 to Y=84) -->
-                            <line x1="35.5" y1="72" x2="35.5" y2="84" class="cad-hidden"/>
-                            <line x1="50.5" y1="72" x2="50.5" y2="84" class="cad-hidden"/>
-                            <line x1="43" y1="70" x2="43" y2="86" class="cad-center"/>
-
-                            <line x1="130.5" y1="72" x2="130.5" y2="84" class="cad-hidden"/>
-                            <line x1="145.5" y1="72" x2="145.5" y2="84" class="cad-hidden"/>
-                            <line x1="138" y1="70" x2="138" y2="86" class="cad-center"/>
-
-                            <!-- 2. Rear Cutout Slot (Width 20: X=80.5 & X=100.5) & Rear Bosses (12 wide: X=68.5 & X=112.5) -->
-                            <line x1="80.5" y1="22" x2="80.5" y2="84" class="cad-hidden"/>
-                            <line x1="100.5" y1="22" x2="100.5" y2="84" class="cad-hidden"/>
-                            <line x1="68.5" y1="22" x2="68.5" y2="84" class="cad-hidden"/>
-                            <line x1="112.5" y1="22" x2="112.5" y2="84" class="cad-hidden"/>
-
-                            <!-- Dimensions for Front View -->
-                            <g class="dim-layer">
-                                <!-- Width 125 -->
-                                <line x1="28" y1="101" x2="153" y2="101" class="cad-dim-line"/>
-                                <text x="90.5" y="109" text-anchor="middle" class="cad-dim-text">125</text>
-                                <!-- Height 62 + 12 = 74 -->
-                                <line x1="22" y1="22" x2="22" y2="84" class="cad-dim-line"/>
-                                <text x="19" y="55" text-anchor="end" class="cad-dim-text">62</text>
-                                <line x1="22" y1="84" x2="22" y2="96" class="cad-dim-line"/>
-                                <text x="19" y="93" text-anchor="end" class="cad-dim-text">12</text>
-                                <!-- R10 & Ø12 -->
-                                <text x="155" y="25" class="cad-dim-text">R10</text>
-                                <text x="155" y="54" class="cad-dim-text">Ø12</text>
-                            </g>
-                        </g>
-
-                        <!-- ========================================== -->
-                        <!-- 2. LEFT SIDE VIEW (المسقط الجانبي) - Top Right -->
-                        <!-- Origin: X=188, Y=22 | Size: 62 x 74        -->
-                        <!-- Back wall on Left (X=188..200), Base to Right (X=188..250) -->
-                        <!-- Bottom Heel at Back-Bottom (X=188..200, Y=84..96) -->
-                        <!-- ========================================== -->
-                        <g id="svg-group-side" class="cursor-pointer projection-view" onclick="setCameraView('side')">
-                            <rect id="highlight-side" x="176" y="13" width="88" height="92" rx="4" fill="transparent" class="view-box-highlight"/>
-                            <text x="219" y="11" text-anchor="middle" fill="#1e3a8a" font-size="8" font-weight="800">المسقط الجانبي (Side)</text>
-
-                            <!-- Rear Bosses Projection (15mm backward to the left: X=178 to 188, height Y=22 to 84) -->
-                            <rect x="178" y="22" width="10" height="62" class="cad-fill"/>
-
-                            <!-- Main L-Shape Body + Continuous Back Wall down to Bottom Heel (Y=22 to Y=96):
-                                 Back wall + Heel: X=188..200, Y=22..96 (Total 74mm)
-                                 Horizontal Base plate: X=200..250, Y=72..84 -->
-                            <path d="M 188 22 L 200 22 L 200 72 L 250 72 L 250 84 L 200 84 L 200 96 L 188 96 Z" class="cad-fill"/>
-
-                            <!-- 30 Degree Angled Rib Triangle:
-                                 Starts at front edge of base (250, 72), goes at 30 deg up-left to wall (200, 43.1) -->
-                            <polygon points="200,43.1 250,72 200,72" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.6" stroke-linejoin="round"/>
-
-                            <!-- Tangent line for Top Fillet R10 (Y = 22 + 10 = 32) -->
-                            <line x1="178" y1="32" x2="200" y2="32" stroke="#0f172a" stroke-width="1.1"/>
-
-                            <!-- HIDDEN LINES (Dashed Red) -->
-                            <!-- 1. Wall Hole Ø12 (Y = 52 -> 46 to 58, through X=188..200) -->
-                            <line x1="188" y1="46" x2="200" y2="46" class="cad-hidden"/>
-                            <line x1="188" y1="58" x2="200" y2="58" class="cad-hidden"/>
-                            <line x1="185" y1="52" x2="203" y2="52" class="cad-center"/>
-
-                            <!-- 2. Base Hole Ø15 (15mm from front X=250 -> center at X=235 -> X=227.5 to 242.5, Y=72..84) -->
-                            <line x1="227.5" y1="72" x2="227.5" y2="84" class="cad-hidden"/>
-                            <line x1="242.5" y1="72" x2="242.5" y2="84" class="cad-hidden"/>
-                            <line x1="235" y1="70" x2="235" y2="86" class="cad-center"/>
-
-                            <!-- 3. Base Bottom Continuity Line inside back wall (Y=84 from X=188 to 200) -->
-                            <line x1="188" y1="84" x2="200" y2="84" class="cad-hidden"/>
-
-                            <!-- Dimensions for Side View -->
-                            <g class="dim-layer">
-                                <line x1="188" y1="101" x2="250" y2="101" class="cad-dim-line"/>
-                                <text x="223" y="109" text-anchor="middle" class="cad-dim-text">62</text>
-                                <text x="194" y="104" text-anchor="middle" class="cad-dim-text">12</text>
-                                <text x="234" y="60" class="cad-dim-text">30°</text>
-                                <text x="253" y="81" class="cad-dim-text">12</text>
-                            </g>
-                        </g>
-
-                        <!-- ========================================== -->
-                        <!-- 3. TOP VIEW (المسقط الأفقي) - Bottom Left  -->
-                        <!-- Origin: X=28, Y=136 | Size: 125 x 62       -->
-                        <!-- Back is at Top (Y=136), Front is Bottom (Y=198) -->
-                        <!-- ========================================== -->
-                        <g id="svg-group-top" class="cursor-pointer projection-view" onclick="setCameraView('top')">
-                            <rect id="highlight-top" x="20" y="118" width="141" height="98" rx="4" fill="transparent" class="view-box-highlight"/>
-                            <text x="90.5" y="226" text-anchor="middle" fill="#1e3a8a" font-size="8" font-weight="800">المسقط الأفقي (Top / Plan)</text>
-
-                            <!-- Main Base Plate Rectangle (X=28..153, Y=136..198) -->
-                            <rect x="28" y="136" width="125" height="62" class="cad-fill"/>
-
-                            <!-- Rear Bosses & Cutout (Back edge at Y=136, protruding backward to Y=126)
-                                 Left boss: X=68.5..80.5 (12 wide), Gap: X=80.5..100.5 (20 wide), Right boss: X=100.5..112.5 (12 wide) -->
-                            <rect x="68.5" y="126" width="12" height="10" class="cad-fill"/>
-                            <rect x="100.5" y="126" width="12" height="10" class="cad-fill"/>
-
-                            <!-- Vertical Wall Front Face Line (Thickness 12 from Y=136 -> Y=148)
-                                 Note: Bottom Heel (Z=-31 to -19) shares this exact 12mm depth underneath! -->
-                            <line x1="28" y1="148" x2="153" y2="148" class="cad-visible"/>
-
-                            <!-- Central Rib Top Projection (Width 12: X=84.5..96.5, from wall Y=148 to front edge Y=198) -->
-                            <rect x="84.5" y="148" width="12" height="50" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.6"/>
-
-                            <!-- Two Visible Base Holes (DIA 15 -> R=7.5)
-                                 Centers at X=43, Y=183 and X=138, Y=183 (15mm from front Y=198 and 15mm from sides) -->
-                            <circle cx="43" cy="183" r="7.5" fill="#ffffff" stroke="#0f172a" stroke-width="1.6"/>
-                            <circle cx="138" cy="183" r="7.5" fill="#ffffff" stroke="#0f172a" stroke-width="1.6"/>
-
-                            <!-- Centerlines for Base Holes -->
-                            <line x1="33" y1="183" x2="53" y2="183" class="cad-center"/>
-                            <line x1="43" y1="173" x2="43" y2="193" class="cad-center"/>
-                            <line x1="128" y1="183" x2="148" y2="183" class="cad-center"/>
-                            <line x1="138" y1="173" x2="138" y2="193" class="cad-center"/>
-
-                            <!-- HIDDEN LINES (Dashed Red) for Wall Holes Ø12 (X=48 -> 42..54 and X=133 -> 127..139, Y=136..148) -->
-                            <line x1="42" y1="136" x2="42" y2="148" class="cad-hidden"/>
-                            <line x1="54" y1="136" x2="54" y2="148" class="cad-hidden"/>
-                            <line x1="48" y1="133" x2="48" y2="151" class="cad-center"/>
-
-                            <line x1="127" y1="136" x2="127" y2="148" class="cad-hidden"/>
-                            <line x1="139" y1="136" x2="139" y2="148" class="cad-hidden"/>
-                            <line x1="133" y1="133" x2="133" y2="151" class="cad-center"/>
-
-                            <!-- Dimensions for Top View -->
-                            <g class="dim-layer">
-                                <text x="156" y="186" class="cad-dim-text">Ø15</text>
-                                <text x="90.5" y="124" text-anchor="middle" class="cad-dim-text">12   20   12</text>
-                            </g>
-                        </g>
-
-                        <!-- Projection Alignment Helper Lines (45-degree Miter Line Corner) -->
-                        <g class="projection-helper" opacity="0.45">
-                            <line x1="175" y1="122" x2="245" y2="192" stroke="#64748b" stroke-width="0.8" stroke-dasharray="3,3"/>
-                            <text x="218" y="142" fill="#475569" font-size="6.5" font-weight="700">خط الإسقاط 45°</text>
-                            <text x="218" y="152" fill="#475569" font-size="6">اضغط على أي مسقط</text>
-                            <text x="218" y="160" fill="#475569" font-size="6">لمطابقته مع 3D</text>
-                        </g>
-                    </svg>
-                </div>
-            </div>
-
-            <!-- Interactive Projection Checklist Footer -->
-            <div class="px-4 py-3 bg-slate-900 border-t border-slate-800 grid grid-cols-3 gap-2 text-center">
-                <button onclick="setCameraView('front')" class="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-950/50 border border-slate-700 hover:border-rose-500/50 transition">
-                    <div class="text-xs font-extrabold text-rose-400">1. الرأسي (Front)</div>
-                    <div class="text-[10px] text-slate-400 mt-0.5">يُظهر الكعب 12 وارتفاع 74</div>
-                </button>
-                <button onclick="setCameraView('top')" class="p-2 rounded-xl bg-slate-800/80 hover:bg-emerald-950/50 border border-slate-700 hover:border-emerald-500/50 transition">
-                    <div class="text-xs font-extrabold text-emerald-400">2. الأفقي (Top)</div>
-                    <div class="text-[10px] text-slate-400 mt-0.5">يُظهر ثقوب Ø15 والتجويف</div>
-                </button>
-                <button onclick="setCameraView('side')" class="p-2 rounded-xl bg-slate-800/80 hover:bg-amber-950/50 border border-slate-700 hover:border-amber-500/50 transition">
-                    <div class="text-xs font-extrabold text-amber-400">3. الجانبي (Side)</div>
-                    <div class="text-[10px] text-slate-400 mt-0.5">يُظهر الكعب الخلفي وزاوية 30°</div>
-                </button>
-            </div>
-        </section>
-    </main>
-
-    <!-- Signature footer -->
-    <footer class="site-footer mt-8 px-4 pt-7 pb-6 sm:pt-8">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5 text-center sm:text-right">
-            <div class="flex items-center gap-3">
-                <div class="footer-mark w-12 h-12 rounded-2xl flex items-center justify-center border border-white/15">
-                    <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                        <path d="M4 17.5 12 21l8-3.5V6.5L12 3 4 6.5v11Z" stroke-width="1.7" stroke-linejoin="round"/><path d="m4.5 7 7.5 3.5L19.5 7M12 10.5V20" stroke-width="1.5" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-[10px] font-bold tracking-[.18em] text-blue-300">مختبر الرسم الهندسي</p>
-                    <p class="mt-0.5 text-sm sm:text-base font-extrabold text-white">تعلم بالرؤية… وارسم بثقة</p>
-                </div>
-            </div>
-            <div class="h-px w-20 sm:h-10 sm:w-px bg-slate-700/80"></div>
-            <div>
-                <p class="text-[10px] font-semibold text-slate-400">تصميم وتطوير</p>
-                <p class="mt-1 text-sm font-bold text-slate-100">عبدالكريم راتب الكريدي</p>
-            </div>
-            <div class="flex items-center gap-2 rounded-full border border-slate-700/80 bg-slate-900/50 px-3.5 py-2 text-[11px] font-semibold text-slate-300">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.7)]"></span>
-                تجربة تعليمية تفاعلية ثلاثية الأبعاد
-            </div>
+        <div class="v2d-body"><svg id="v2d-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" style="direction:ltr"></svg></div>
+        <div class="v2d-foot">
+          <span><svg viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" class="cad-vis"/></svg>ظاهر</span>
+          <span><svg viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" class="cad-hid"/></svg>مخفي</span>
+          <span><svg viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" class="cad-ctr"/></svg>محور</span>
+          <span><svg viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" class="cad-dim"/></svg>بُعد (مم)</span>
+          <span class="note">✎ شكل مسطّح 2D — ارسمه مباشرة بهذه الأبعاد</span>
         </div>
-        <div class="max-w-7xl mx-auto mt-6 border-t border-slate-800/80 pt-4 text-center text-[10px] text-slate-500">إسقاط هندسي • مساقط دقيقة • تعلم تفاعلي</div>
-    </footer>
-
-    <script>
-        // ============================================================================
-        // 1. EDUCATIONAL METADATA FOR EACH PROJECTION VIEW
-        // ============================================================================
-        const VIEW_INFO = {
-            iso: {
-                badge: '3D',
-                badgeBg: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-                title: 'المنظور الهندسي الأيزومتري (Isometric View)',
-                desc: 'هذه هي القطعة الميكانيكية بأبعادها الكاملة (طول 125 × عمق 62 × ارتفاع كلي 74 مم شامل الكعب السفلي الخلفي 12×12 مم). يمكنك تدويرها بحرية، أو النقر على أي سهم ملون حول المجسم للانتقال مباشرة إلى مسقطها.'
-            },
-            front: {
-                badge: 'رأسي',
-                badgeBg: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
-                title: 'المسقط الرأسي (Front View / Elevation)',
-                desc: 'عند النظر من اتجاه السهم الأحمر: يظهر الارتفاع الكلي 74 مم (62 مم للجسم الرئيسي + 12 مم للكعب السفلي الخلفي الممتد بعرض 125 مم)، مع الاستدارتين R10 وثقبي الجدار Ø12 كدوائر ظاهرة، والعصب الوسطي. وتظهر ثقوب القاعدة Ø15 والتجويف الخلفي كخطوط متقطعة مخفية.'
-            },
-            top: {
-                badge: 'أفقي',
-                badgeBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-                title: 'المسقط الأفقي (Top View / Plan)',
-                desc: 'عند النظر من الأعلى (السهم الأخضر): تظهر القاعدة بأبعاد 125 × 62، وثقبا القاعدة Ø15 كدوائر ظاهرة، والعصب المائل كشريط بعرض 12 في المنتصف، والتشكيل الخلفي (12 - 20 - 12 بعمق 15 مم). ويتطابق خط سُمك الجدار (12 مم) مع حدود الكعب السفلي الخلفي الموجود أسفله.'
-            },
-            side: {
-                badge: 'جانبي',
-                badgeBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-                title: 'المسقط الجانبي الأيسر (Left Side View)',
-                desc: 'عند النظر من اليسار (السهم الأصفر): يظهر شكل حرف L مع الكعب السفلي الخلفي النازل لأسفل بمقدار 12 مم وعرضه 12 مم في الخلف، ويظهر العصب المائل بوضوح كمثلث يصنع زاوية 30° مع القاعدة الأفقية، وتظهر الثقوب Ø15 و Ø12 كخطوط متقطعة مخفية.'
-            }
-        };
-
-        // ============================================================================
-        // 2. THREE.JS SCENE SETUP & EXACT CAD GEOMETRY CONSTRUCTION
-        // ============================================================================
-        let scene, camera, renderer, controls;
-        let partGroup, arrowsGroup;
-        let solidMaterials = [];
-        let isXRay = false;
-        let showDimensions = true;
-
-        // Camera smooth animation state
-        let isAnimatingCamera = false;
-        let targetCamPos = new THREE.Vector3();
-        let targetControlsLookAt = new THREE.Vector3(0, 0, 0);
-
-        // Raycaster for clicking arrows/faces
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        let clickableObjects = [];
-        let hoveredObject = null;
-
-        function initThreeJS() {
-            const container = document.getElementById('canvas-container');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-
-            // Scene
-            scene = new THREE.Scene();
-
-            // Camera (Perspective with narrow FOV so orthographic views look crisp and accurate)
-            camera = new THREE.PerspectiveCamera(32, width / height, 1, 2000);
-            camera.position.set(-195, 155, 215);
-
-            // Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(width, height);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            container.appendChild(renderer.domElement);
-
-            // OrbitControls
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.07;
-            controls.minDistance = 90;
-            controls.maxDistance = 550;
-            controls.target.set(0, 0, 0);
-
-            // Stop auto camera tween if user manually grabs the scene
-            controls.addEventListener('start', () => {
-                isAnimatingCamera = false;
-            });
-
-            // Studio Lighting
-            const ambientLight = new THREE.HemisphereLight(0xf4f8ff, 0x334155, 1.55);
-            scene.add(ambientLight);
-            const keyLight = new THREE.DirectionalLight(0xffffff, 2.25);
-            keyLight.position.set(-120, 180, 160);
-            scene.add(keyLight);
-            const fillLight = new THREE.DirectionalLight(0xdbeafe, 0.85);
-            fillLight.position.set(130, 70, -120);
-            scene.add(fillLight);
-            // Reference Engineering Grid Floor (positioned cleanly below the bottom heel at Y = -37.2)
-            const gridHelper = new THREE.GridHelper(260, 26, 0x334155, 0x1e293b);
-            gridHelper.position.y = -37.2;
-            scene.add(gridHelper);
-
-            // Build the Exact 3D Mechanical Part
-            buildMechanicalPart();
-
-            // Build Interactive 3D Directional View Arrows
-            buildInteractiveViewArrows();
-
-            // Event Listeners
-            window.addEventListener('resize', onWindowResize);
-            renderer.domElement.addEventListener('pointermove', onPointerMove);
-            renderer.domElement.addEventListener('pointerdown', onPointerDown);
-
-            // Start Render Loop
-            animate();
-        }
-
-        /**
-         * Builds the exact mechanical part centered around (0,0,0):
-         * Total X = 125 (-62.5 to +62.5)
-         * Total Y = 74  (-37 to +37):
-         *    - Bottom Heel (الكعب السفلي الخلفي): Y = -37 to -25 (12mm), Z = -31 to -19 (12mm), X = -62.5 to +62.5 (125mm)
-         *    - Horizontal Base Plate: Y = -25 to -13 (12mm), Z = -31 to +31 (62mm)
-         *    - Vertical Back Wall: Y = -13 to +37 (50mm above base -> 62mm from base bottom, 74mm from heel bottom)
-         * Total Z = 62  (-31 to +31) plus rear bosses (-31 to -46)
-         */
-        function buildMechanicalPart() {
-            partGroup = new THREE.Group();
-
-            // Primary CAD Metal/Polymer Material
-            const mainMat = new THREE.MeshStandardMaterial({
-                color: 0xffffff,
-                roughness: 0.32,
-                metalness: 0.04,
-                transparent: true,
-                opacity: 1.0,
-                polygonOffset: true,
-                polygonOffsetFactor: 1,
-                polygonOffsetUnits: 1
-            });
-            solidMaterials.push(mainMat);
-
-            // Helper function to add a mesh with crisp CAD black edge lines
-            function addCadMesh(geometry, material = mainMat, edgeThreshold = 22) {
-                const mesh = new THREE.Mesh(geometry, material);
-                const edges = new THREE.EdgesGeometry(geometry, edgeThreshold);
-                const lineMat = new THREE.LineBasicMaterial({ color: 0x0f172a, linewidth: 1.5 });
-                const edgeLines = new THREE.LineSegments(edges, lineMat);
-                mesh.add(edgeLines);
-                partGroup.add(mesh);
-                return mesh;
-            }
-
-            // ---------------------------------------------------------
-            // A. BOTTOM REAR HEEL / FLANGE (الكعب السفلي الخلفي 125 x 12 x 12)
-            //    Located underneath the rear edge of the horizontal base:
-            //    X = -62.5 to +62.5 (125mm)
-            //    Y = -37 to -25 (12mm downward)
-            //    Z = -31 to -19 (12mm depth from back)
-            // ---------------------------------------------------------
-            const heelGeo = new THREE.BoxGeometry(125, 12, 12);
-            heelGeo.translate(0, -31, -25);
-            addCadMesh(heelGeo);
-
-            // ---------------------------------------------------------
-            // B. HORIZONTAL BASE PLATE (125 x 12 x 62) with 2 Holes Ø15
-            //    Y = -25 to -13
-            // ---------------------------------------------------------
-            const baseShape = new THREE.Shape();
-            baseShape.moveTo(-62.5, -31);
-            baseShape.lineTo(62.5, -31);
-            baseShape.lineTo(62.5, 31);
-            baseShape.lineTo(-62.5, 31);
-            baseShape.closePath();
-
-            // 2 Through-Holes DIA 15 (Radius 7.5)
-            // Located 15mm from front edge (Z = 31 - 15 = 16) and 15mm from side edges (X = ±47.5)
-            const holeLeft = new THREE.Path();
-            holeLeft.absarc(-47.5, -16, 7.5, 0, Math.PI * 2, true);
-            baseShape.holes.push(holeLeft);
-
-            const holeRight = new THREE.Path();
-            holeRight.absarc(47.5, -16, 7.5, 0, Math.PI * 2, true);
-            baseShape.holes.push(holeRight);
-
-            const baseGeo = new THREE.ExtrudeGeometry(baseShape, {
-                depth: 12,
-                bevelEnabled: false,
-                curveSegments: 36
-            });
-            baseGeo.rotateX(-Math.PI / 2);
-            baseGeo.translate(0, -25, 0); // Bottom at Y = -25, Top at Y = -13
-            addCadMesh(baseGeo);
-
-            // ---------------------------------------------------------
-            // C. VERTICAL BACK WALL (125 x 50 above base = 62 above base bottom, 74 total)
-            //    with Top Fillets R10 & 2 Holes Ø12
-            // ---------------------------------------------------------
-            const wallShape = new THREE.Shape();
-            // Starts on top of base plate (Y = -13) up to Y = +37
-            wallShape.moveTo(-62.5, -13);
-            wallShape.lineTo(62.5, -13);
-            wallShape.lineTo(62.5, 27); // 37 - 10 = 27
-            wallShape.absarc(52.5, 27, 10, 0, Math.PI / 2, false);
-            wallShape.lineTo(-52.5, 37);
-            wallShape.absarc(-52.5, 27, 10, Math.PI / 2, Math.PI, false);
-            wallShape.closePath();
-
-            // 2 Through-Holes DIA 12 (Radius 6)
-            // Located 20mm from side edges (X = ±42.5) and 30mm down from top (Y = 37 - 30 = +7)
-            const wallHoleL = new THREE.Path();
-            wallHoleL.absarc(-42.5, 7, 6, 0, Math.PI * 2, true);
-            wallShape.holes.push(wallHoleL);
-
-            const wallHoleR = new THREE.Path();
-            wallHoleR.absarc(42.5, 7, 6, 0, Math.PI * 2, true);
-            wallShape.holes.push(wallHoleR);
-
-            const wallGeo = new THREE.ExtrudeGeometry(wallShape, {
-                depth: 12,
-                bevelEnabled: false,
-                curveSegments: 36
-            });
-            // Positioned at back: Z = -31 to -19
-            wallGeo.translate(0, 0, -31);
-            addCadMesh(wallGeo);
-
-            // ---------------------------------------------------------
-            // D. REAR BOSSES / CUTOUT RIBS ON BACK OF WALL (12 - 20 - 12, depth 15)
-            //    Two vertical ribs of width 12 separated by gap 20, extending 15 backward
-            // ---------------------------------------------------------
-            const rearBossGeo = new THREE.BoxGeometry(12, 62, 15);
-            
-            const leftRearBoss = rearBossGeo.clone();
-            // Y centered on main 62mm body (-25 to +37 -> center Y = +6)
-            leftRearBoss.translate(-16, 6, -31 - 7.5);
-            addCadMesh(leftRearBoss);
-
-            const rightRearBoss = rearBossGeo.clone();
-            rightRearBoss.translate(16, 6, -31 - 7.5);
-            addCadMesh(rightRearBoss);
-
-            // ---------------------------------------------------------
-            // E. CENTRAL ANGLED RIB (WEB) - Thickness 12, Angle 30°
-            //    Rises from top of base (Y = -13) at front edge (Z = +31)
-            //    at 30 degrees to meet front face of vertical wall (Z = -19)
-            // ---------------------------------------------------------
-            const runZ = 50; // Z = +31 to Z = -19
-            const riseY = runZ * Math.tan(Math.PI / 6); // 50 * tan(30°) = 28.8675 mm
-
-            const ribShape = new THREE.Shape();
-            ribShape.moveTo(-19, -13);          // Bottom-back corner (meets wall & base)
-            ribShape.lineTo(31, -13);           // Bottom-front corner (front edge of base)
-            ribShape.lineTo(-19, -13 + riseY);  // Top-back corner (meets vertical wall at 30°)
-            ribShape.closePath();
-
-            const ribGeo = new THREE.ExtrudeGeometry(ribShape, {
-                depth: 12,
-                bevelEnabled: false
-            });
-            ribGeo.rotateY(-Math.PI / 2);
-            ribGeo.translate(6, 0, 0);
-            addCadMesh(ribGeo);
-
-            scene.add(partGroup);
-        }
-
-        /**
-         * Creates interactive 3D arrows around the part so students can click
-         * directly on any viewing direction (Front, Top, Left Side)
-         */
-        function buildInteractiveViewArrows() {
-            arrowsGroup = new THREE.Group();
-
-            function createDirectionArrow(name, colorHex, position, rotationEuler) {
-                const group = new THREE.Group();
-                group.position.copy(position);
-                group.rotation.copy(rotationEuler);
-
-                const mat = new THREE.MeshStandardMaterial({
-                    color: colorHex,
-                    emissive: colorHex,
-                    emissiveIntensity: 0.25,
-                    roughness: 0.3
-                });
-
-                // Arrow Shaft
-                const shaftGeo = new THREE.CylinderGeometry(2.2, 2.2, 16, 16);
-                shaftGeo.translate(0, 8, 0);
-                const shaft = new THREE.Mesh(shaftGeo, mat);
-
-                // Arrow Head (pointing along -Y of local group, toward the part)
-                const headGeo = new THREE.ConeGeometry(5.5, 11, 20);
-                headGeo.rotateX(Math.PI);
-                headGeo.translate(0, -4, 0);
-                const head = new THREE.Mesh(headGeo, mat);
-
-                // Invisible larger hit-box for easy mobile tapping
-                const hitGeo = new THREE.SphereGeometry(14, 12, 12);
-                const hitMat = new THREE.MeshBasicMaterial({ visible: false });
-                const hitMesh = new THREE.Mesh(hitGeo, hitMat);
-                hitMesh.userData = { viewKey: name };
-                clickableObjects.push(hitMesh);
-
-                group.add(shaft, head, hitMesh);
-                arrowsGroup.add(group);
-                return group;
-            }
-
-            // 1. FRONT VIEW ARROW (Red - pointing from +Z toward -Z)
-            createDirectionArrow(
-                'front',
-                0xf43f5e,
-                new THREE.Vector3(0, 0, 56),
-                new THREE.Euler(-Math.PI / 2, 0, 0)
-            );
-
-            // 2. TOP VIEW ARROW (Emerald - pointing from +Y toward -Y)
-            createDirectionArrow(
-                'top',
-                0x10b981,
-                new THREE.Vector3(0, 56, 0),
-                new THREE.Euler(0, 0, 0)
-            );
-
-            // 3. LEFT SIDE VIEW ARROW (Amber - pointing from -X toward +X)
-            createDirectionArrow(
-                'side',
-                0xf59e0b,
-                new THREE.Vector3(-88, 0, 0),
-                new THREE.Euler(0, 0, -Math.PI / 2)
-            );
-
-            scene.add(arrowsGroup);
-        }
-
-        // ============================================================================
-        // 3. INTERACTION & CAMERA PROJECTION TRANSITIONS
-        // ============================================================================
-        function setCameraView(viewKey) {
-            const dist = 270;
-            isAnimatingCamera = true;
-            targetControlsLookAt.set(0, 0, 0);
-
-            if (viewKey === 'iso') {
-                targetCamPos.set(-190, 150, 210);
-            } else if (viewKey === 'front') {
-                targetCamPos.set(0, 0, dist);
-            } else if (viewKey === 'top') {
-                // Slight Z offset (0.1) prevents Gimbal lock in OrbitControls at exact 90 deg top
-                targetCamPos.set(0, dist, 0.15);
-            } else if (viewKey === 'side') {
-                targetCamPos.set(-dist, 0, 0);
-            }
-
-            updateUIState(viewKey);
-            if (viewKey !== 'iso') focusProjection(viewKey);
-            else showAllProjections();
-        }
-
-        const PROJECTION_FRAMES = {
-            front: '12 5 155 112',
-            side: '172 5 96 112',
-            top: '16 116 150 108'
-        };
-
-        function focusProjection(viewKey) {
-            const panel = document.getElementById('projection-panel');
-            const svg = document.getElementById('projections-svg');
-            panel.classList.add('projection-focus');
-            svg.setAttribute('viewBox', PROJECTION_FRAMES[viewKey]);
-            document.querySelectorAll('.projection-view').forEach(group => {
-                group.classList.toggle('projection-view-muted', group.id !== `svg-group-${viewKey}`);
-            });
-            document.getElementById('projection-reset').classList.remove('hidden');
-            if (window.matchMedia('(max-width: 1279px)').matches) {
-                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        function showAllProjections() {
-            const panel = document.getElementById('projection-panel');
-            const svg = document.getElementById('projections-svg');
-            if (!panel || !svg) return;
-            panel.classList.remove('projection-focus');
-            svg.setAttribute('viewBox', '0 0 280 238');
-            document.querySelectorAll('.projection-view').forEach(group => group.classList.remove('projection-view-muted'));
-            const reset = document.getElementById('projection-reset');
-            if (reset) reset.classList.add('hidden');
-        }
-
-        function updateUIState(activeKey) {
-            // 1. Update Top Bar Buttons
-            document.querySelectorAll('.view-btn').forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white', 'shadow');
-                btn.classList.add('bg-slate-700', 'text-slate-200');
-            });
-            const activeBtn = document.getElementById(`view-btn-${activeKey}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('bg-slate-700', 'text-slate-200');
-                activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow');
-            }
-
-            // 2. Highlight Corresponding 2D SVG Projection Frame
-            ['front', 'top', 'side'].forEach(k => {
-                const rect = document.getElementById(`highlight-${k}`);
-                if (rect) {
-                    if (k === activeKey) {
-                        rect.classList.add('view-active-ring');
-                    } else {
-                        rect.classList.remove('view-active-ring');
-                    }
-                }
-            });
-
-            // 3. Update Educational Explanation Card
-            const info = VIEW_INFO[activeKey] || VIEW_INFO.iso;
-            const iconEl = document.getElementById('exp-icon');
-            iconEl.className = `w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-extrabold text-xs border ${info.badgeBg}`;
-            iconEl.textContent = info.badge;
-            document.getElementById('exp-title').textContent = info.title;
-            document.getElementById('exp-desc').textContent = info.desc;
-        }
-
-        function toggleXRay() {
-            isXRay = !isXRay;
-            const btn = document.getElementById('btn-xray');
-            const label = document.getElementById('xray-label');
-
-            solidMaterials.forEach(mat => {
-                mat.opacity = isXRay ? 0.32 : 1.0;
-                mat.depthWrite = !isXRay;
-                mat.needsUpdate = true;
-            });
-
-            if (isXRay) {
-                btn.classList.add('bg-amber-500/20', 'border-amber-400');
-                label.textContent = 'إيقاف وضع X-Ray (مجسم مصمت)';
-            } else {
-                btn.classList.remove('bg-amber-500/20', 'border-amber-400');
-                label.textContent = 'وضع الأشعة X-Ray (الخطوط المخفية)';
-            }
-        }
-
-        function toggleDimensions() {
-            showDimensions = !showDimensions;
-            const label = document.getElementById('dims-label');
-            document.querySelectorAll('.dim-layer').forEach(el => {
-                el.style.display = showDimensions ? 'inline' : 'none';
-            });
-            label.textContent = showDimensions ? 'إخفاء الأبعاد' : 'إظهار الأبعاد';
-        }
-
-        // ============================================================================
-        // 4. RAYCASTING FOR DIRECT CLICKING ON 3D ARROWS
-        // ============================================================================
-        function updatePointerCoords(event) {
-            const rect = renderer.domElement.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        }
-
-        function onPointerMove(event) {
-            updatePointerCoords(event);
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(clickableObjects);
-            const badge = document.getElementById('hover-badge');
-
-            if (intersects.length > 0) {
-                const viewKey = intersects[0].object.userData.viewKey;
-                renderer.domElement.style.cursor = 'pointer';
-                const names = {
-                    front: 'اضغط لعرض المسقط الرأسي (Front)',
-                    top: 'اضغط لعرض المسقط الأفقي (Top)',
-                    side: 'اضغط لعرض المسقط الجانبي (Side)'
-                };
-                badge.textContent = names[viewKey];
-                badge.classList.remove('hidden');
-            } else {
-                renderer.domElement.style.cursor = 'grab';
-                badge.classList.add('hidden');
-            }
-        }
-
-        function onPointerDown(event) {
-            updatePointerCoords(event);
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(clickableObjects);
-
-            if (intersects.length > 0) {
-                const viewKey = intersects[0].object.userData.viewKey;
-                setCameraView(viewKey);
-            }
-        }
-
-        function onWindowResize() {
-            const container = document.getElementById('canvas-container');
-            if (!container || !renderer || !camera) return;
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
-        }
-
-        // ============================================================================
-        // 5. ANIMATION LOOP
-        // ============================================================================
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // Subtle floating pulse for 3D direction arrows
-            const time = Date.now() * 0.003;
-            if (arrowsGroup && arrowsGroup.children.length === 3) {
-                arrowsGroup.children[0].position.z = 56 + Math.sin(time) * 2.2;
-                arrowsGroup.children[1].position.y = 56 + Math.sin(time + 1) * 2.2;
-                arrowsGroup.children[2].position.x = -88 - Math.sin(time + 2) * 2.2;
-            }
-
-            // Smooth camera interpolation when switching projections
-            if (isAnimatingCamera) {
-                camera.position.lerp(targetCamPos, 0.1);
-                controls.target.lerp(targetControlsLookAt, 0.1);
-                if (camera.position.distanceTo(targetCamPos) < 0.4) {
-                    camera.position.copy(targetCamPos);
-                    isAnimatingCamera = false;
-                }
-            }
-
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        // Start on Window Load
-        window.onload = function () {
-            initThreeJS();
-        };
-    </script>
+      </div>
+    </div>
+    <div class="info">
+      <div class="info-top"><div class="exp-icon" id="exp-icon">3D</div><div><h3 id="exp-title"></h3><p id="exp-desc"></p></div></div>
+      <h4 id="exp-steps-title"></h4><ol id="exp-steps"></ol>
+    </div>
+  </section>
+
+  <aside class="panel sheet">
+    <div class="bar">
+      <h2><span class="dot"></span>لوحة المساقط الثلاثة (2D)</h2>
+      <div class="legend">
+        <span><svg viewBox="0 0 22 6"><line x1="0" y1="3" x2="22" y2="3" class="cad-vis"/></svg>ظاهر</span>
+        <span><svg viewBox="0 0 22 6"><line x1="0" y1="3" x2="22" y2="3" class="cad-hid"/></svg>مخفي</span>
+        <span><svg viewBox="0 0 22 6"><line x1="0" y1="3" x2="22" y2="3" class="cad-ctr"/></svg>محور</span>
+      </div>
+    </div>
+    <div class="paper" id="sheet-holder"></div>
+    <div class="qbar">
+      <button class="qbtn" data-view="front" style="--c:#fb7185"><b style="color:#fb7185">1. الرأسي</b><small>جولة ثم رسم 2D</small></button>
+      <button class="qbtn" data-view="top" style="--c:#34d399"><b style="color:#34d399">2. الأفقي</b><small>جولة ثم رسم 2D</small></button>
+      <button class="qbtn" data-view="side" style="--c:#fbbf24"><b style="color:#fbbf24">3. الجانبي</b><small>جولة ثم رسم 2D</small></button>
+    </div>
+  </aside>
+</main>
+
+<footer class="ftr"><span>تم تطوير و برمجة بواسطة عبدالكريم راتب الكريدي</span></footer>
+
+<script>
+const TAN30=Math.tan(Math.PI/6), RISE=50*TAN30, YR=50-RISE;
+
+/* ===== 2D drawing builders (local mm coordinates, 1 unit = 1 mm) ===== */
+let FS=6;
+const f=n=>Math.round(n*100)/100;
+const L=(x1,y1,x2,y2,c)=>`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" class="${c}"/>`;
+const TX=(x,y,s,o={})=>`<text x="${f(x)}" y="${f(y)}" class="cad-txt" font-size="${o.fs||FS}" text-anchor="${o.a||'middle'}"${o.rot?` transform="rotate(-90 ${f(x)} ${f(y)})"`:''}>${s}</text>`;
+const CI=(cx,cy,r)=>`<circle cx="${cx}" cy="${cy}" r="${r}" class="cad-fill"/>`;
+function HD(x1,x2,y,t,o={}){
+  let s='';
+  if(o.fy!==undefined){const d=y>o.fy?1:-1;s+=L(x1,o.fy+d*1.2,x1,y+d*2,'cad-ext')+L(x2,o.fy+d*1.2,x2,y+d*2,'cad-ext');}
+  s+=`<line x1="${f(x1)}" y1="${f(y)}" x2="${f(x2)}" y2="${f(y)}" class="cad-dim" marker-start="url(#arr)" marker-end="url(#arr)"/>`;
+  return s+TX((x1+x2)/2,y-1.5,t);
+}
+function VD(y1,y2,x,t,o={}){
+  let s='';
+  if(o.fx!==undefined){const d=x>o.fx?1:-1;s+=L(o.fx+d*1.2,y1,x+d*2,y1,'cad-ext')+L(o.fx+d*1.2,y2,x+d*2,y2,'cad-ext');}
+  s+=`<line x1="${f(x)}" y1="${f(y1)}" x2="${f(x)}" y2="${f(y2)}" class="cad-dim" marker-start="url(#arr)" marker-end="url(#arr)"/>`;
+  return s+TX(o.right?x+FS*0.85:x-1.5,(y1+y2)/2,t,{rot:true});
+}
+function LD(x1,y1,x2,y2,t,a){
+  return `<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" class="cad-dim" marker-start="url(#arr)"/>`+TX(x2+(a==='end'?-0.6:0.6),y2-0.8,t,{a:a||'start'});
+}
+const dimWrap=d=>`<g class="dim-layer">${d}</g>`;
+
+function buildFront(){
+  let b='',d='';
+  b+=`<path d="M0 62 V10 A10 10 0 0 1 10 0 H115 A10 10 0 0 1 125 10 V62 Z" class="cad-fill"/>`;
+  [40.5,52.5,72.5,84.5].forEach(x=>b+=L(x,0,x,62,'cad-hid'));
+  [7.5,22.5,102.5,117.5].forEach(x=>b+=L(x,50,x,62,'cad-hid'));
+  b+=L(0,50,125,50,'cad-vis');
+  b+=`<rect x="56.5" y="${f(YR)}" width="12" height="${f(RISE)}" class="cad-fill"/>`;
+  b+=CI(20,30,6)+CI(105,30,6);
+  [20,105].forEach(x=>{b+=L(x-9,30,x+9,30,'cad-ctr')+L(x,21,x,39,'cad-ctr');});
+  [15,110].forEach(x=>b+=L(x,48,x,64,'cad-ctr'));
+  b+=L(62.5,-5,62.5,67,'cad-ctr');
+  d+=HD(0,125,78,'125',{fy:62});
+  d+=HD(56.5,68.5,13,'12',{fy:YR});
+  d+=VD(0,62,-14,'62',{fx:0});
+  d+=VD(50,62,139,'12',{fx:125,right:true});
+  d+=VD(0,30,7,'30')+L(3,30,11,30,'cad-ext');
+  d+=HD(0,20,44,'20')+L(20,39,20,46,'cad-ext');
+  d+=LD(24.2,25.8,31,17,'2×Ø12');
+  d+=LD(122.1,2.9,131,-6,'R10');
+  return {b,d,vb:[-27,-17,184,106]};
+}
+function buildTop(){
+  let b='',d='';
+  b+=`<path d="M0 15 H40.5 V0 H52.5 V15 H72.5 V0 H84.5 V15 H125 V77 H0 Z" class="cad-fill"/>`;
+  [14,26,99,111].forEach(x=>b+=L(x,15,x,27,'cad-hid'));
+  b+=L(0,27,125,27,'cad-vis');
+  b+=`<rect x="56.5" y="27" width="12" height="50" class="cad-fill"/>`;
+  b+=CI(15,62,7.5)+CI(110,62,7.5);
+  [15,110].forEach(x=>{b+=L(x-10,62,x+10,62,'cad-ctr')+L(x,52,x,72,'cad-ctr');});
+  [20,105].forEach(x=>b+=L(x,12,x,30,'cad-ctr'));
+  b+=L(62.5,-4,62.5,81,'cad-ctr');
+  d+=HD(0,125,89,'125',{fy:77});
+  d+=VD(15,77,139,'62',{fx:125,right:true});
+  d+=HD(40.5,52.5,-9,'12',{fy:0})+HD(52.5,72.5,-9,'20',{fy:0})+HD(72.5,84.5,-9,'12',{fy:0});
+  d+=VD(0,15,33,'15',{fx:40.5});
+  d+=VD(15,27,-12,'12',{fx:0});
+  d+=LD(9.7,66.7,-3,73,'2×Ø15','end');
+  d+=VD(62,77,31,'15')+L(25,62,33,62,'cad-ext');
+  d+=HD(0,15,48,'15')+L(15,48,15,52,'cad-ext');
+  return {b,d,vb:[-34,-20,196,122]};
+}
+function buildSide(){
+  let b='',d='';
+  b+=`<polygon points="0,0 27,0 27,${f(YR)} 77,50 77,62 0,62" class="cad-fill"/>`;
+  b+=L(15,0,15,62,'cad-vis')+L(27,YR,27,50,'cad-vis')+L(27,50,77,50,'cad-vis');
+  b+=L(15,24,27,24,'cad-hid')+L(15,36,27,36,'cad-hid')+L(54.5,50,54.5,62,'cad-hid')+L(69.5,50,69.5,62,'cad-hid');
+  b+=L(12,30,30,30,'cad-ctr')+L(62,47,62,65,'cad-ctr');
+  d+=HD(0,15,74,'15',{fy:62})+HD(15,77,74,'62',{fy:62});
+  d+=HD(15,27,-8,'12',{fy:0});
+  d+=VD(0,62,-14,'62',{fx:0});
+  d+=VD(50,62,89,'12',{fx:77,right:true});
+  d+=`<path d="M61 50 A16 16 0 0 1 63.14 42" class="cad-ext"/>`+TX(59,47,'30°',{a:'end'});
+  return {b,d,vb:[-25,-18,125,108]};
+}
+const BUILDERS={front:buildFront,top:buildTop,side:buildSide};
+function viewSVGInner(key,fs){FS=fs;const r=BUILDERS[key]();return {html:r.b+dimWrap(r.d),vb:r.vb};}
+
+function sheetSVG(){
+  FS=6.2;
+  const F=buildFront(),T=buildTop(),S=buildSide();
+  const grp=(key,r,tx,ty,title,tpos)=>`<g class="vgrp" data-view="${key}" transform="translate(${tx} ${ty})"><rect class="v-ring" x="${r.vb[0]}" y="${r.vb[1]}" width="${r.vb[2]}" height="${r.vb[3]}" rx="4"/>${r.b}${dimWrap(r.d)}<text class="v-title" x="${tpos[0]}" y="${tpos[1]}">${title}</text></g>`;
+  const legend=`<g transform="translate(214 140)" font-family="Cairo" font-size="6.4" fill="#44506a">
+   <text x="0" y="0" font-weight="800" fill="#7a5c14" font-size="7.2">الإسقاط الزاوي الأول</text>
+   <text x="0" y="12">الأبعاد بالمليمتر • المقياس 1:1</text>
+   <line x1="0" y1="24" x2="22" y2="24" class="cad-vis"/><text x="28" y="26">خط ظاهر</text>
+   <line x1="0" y1="36" x2="22" y2="36" class="cad-hid"/><text x="28" y="38">خط مخفي</text>
+   <line x1="0" y1="48" x2="22" y2="48" class="cad-ctr"/><text x="28" y="50">خط محور</text>
+   <line x1="0" y1="60" x2="22" y2="60" class="cad-dim"/><text x="28" y="62">خط بُعد</text></g>`;
+  return `<svg viewBox="0 0 330 252" class="sheet-svg" xmlns="http://www.w3.org/2000/svg" style="direction:ltr">
+   <rect x="2" y="2" width="326" height="248" rx="3" fill="none" stroke="#b9ab84" stroke-width="1" vector-effect="non-scaling-stroke"/>
+   ${grp('front',F,30,28,'المسقط الرأسي',[-24,86])}
+   ${grp('side',S,222,28,'المسقط الجانبي',[-22,86])}
+   ${grp('top',T,37,143,'المسقط الأفقي',[-31,99])}
+   ${legend}</svg>`;
+}
+
+/* ===== Solid model (mm). Part-local coords: x±62.5, y±31, z -46..31 (front=+z) ===== */
+function inRoundedWall(x,y){
+  if(Math.abs(x)>62.5||y<-31||y>31)return false;
+  if(y>21&&Math.abs(x)>52.5){const dx=Math.abs(x)-52.5,dy=y-21;if(dx*dx+dy*dy>100)return false;}
+  if((x-42.5)**2+(y-1)**2<36||(x+42.5)**2+(y-1)**2<36)return false;
+  return true;
+}
+function insideSolid(x,y,z){
+  if(z>=-31&&z<=-19&&inRoundedWall(x,y))return true;
+  if(z>=-19&&z<=31&&Math.abs(x)<=62.5&&y>=-31&&y<=-19&&!((x-47.5)**2+(z-16)**2<56.25)&&!((x+47.5)**2+(z-16)**2<56.25))return true;
+  if(Math.abs(x)<=6&&z>=-19&&z<=31&&y>=-19&&y<=-19+(31-z)*TAN30)return true;
+  if(z>=-46&&z<=-31&&y>=-31&&y<=31&&((x>=10&&x<=22)||(x>=-22&&x<=-10)))return true;
+  return false;
+}
+function isRealEdge(mx,my,mz){
+  const d=0.06,s=[];let n=0;
+  for(const i of[-1,1])for(const j of[-1,1])for(const k of[-1,1]){const o=insideSolid(mx+i*d,my+j*d,mz+k*d)?1:0;s.push(o);n+=o;}
+  if(n===0||n===8)return false;
+  for(let a=0;a<3;a++){let lo=0,hi=0;for(let idx=0;idx<8;idx++){const bit=a===0?(idx>>2)&1:a===1?(idx>>1)&1:idx&1;if(bit)hi+=s[idx];else lo+=s[idx];}
+    if((lo===4&&hi===0)||(lo===0&&hi===4))return false;}
+  return true;
+}
+function buildPartGeometries(){
+  const g=[];
+  const ws=new THREE.Shape();
+  ws.moveTo(-62.5,-31);ws.lineTo(62.5,-31);ws.lineTo(62.5,21);
+  ws.absarc(52.5,21,10,0,Math.PI/2,false);ws.lineTo(-52.5,31);ws.absarc(-52.5,21,10,Math.PI/2,Math.PI,false);ws.closePath();
+  [-42.5,42.5].forEach(x=>{const h=new THREE.Path();h.absarc(x,1,6,0,Math.PI*2,true);ws.holes.push(h);});
+  const wall=new THREE.ExtrudeGeometry(ws,{depth:12,bevelEnabled:false,curveSegments:36});
+  wall.translate(0,0,-31);g.push(wall);
+  const bs=new THREE.Shape();
+  bs.moveTo(-62.5,-31);bs.lineTo(62.5,-31);bs.lineTo(62.5,19);bs.lineTo(-62.5,19);bs.closePath();
+  [-47.5,47.5].forEach(x=>{const h=new THREE.Path();h.absarc(x,-16,7.5,0,Math.PI*2,true);bs.holes.push(h);});
+  const base=new THREE.ExtrudeGeometry(bs,{depth:12,bevelEnabled:false,curveSegments:36});
+  base.rotateX(-Math.PI/2);base.translate(0,-31,0);g.push(base);
+  const rs=new THREE.Shape();
+  rs.moveTo(31,-19);rs.lineTo(-19,-19);rs.lineTo(-19,-19+RISE);rs.closePath();
+  const rib=new THREE.ExtrudeGeometry(rs,{depth:12,bevelEnabled:false});
+  rib.rotateY(-Math.PI/2);rib.translate(6,0,0);g.push(rib);
+  [-16,16].forEach(x=>{const b=new THREE.BoxGeometry(12,62,15);b.translate(x,0,-38.5);g.push(b);});
+  return g;
+}
+function buildEdgeArray(geoms){
+  const out=[];
+  geoms.forEach(geo=>{
+    const p=new THREE.EdgesGeometry(geo,25).attributes.position.array;
+    for(let i=0;i<p.length;i+=6){
+      const ax=p[i],ay=p[i+1],az=p[i+2],bx=p[i+3],by=p[i+4],bz=p[i+5];
+      const Ln=Math.hypot(bx-ax,by-ay,bz-az);if(Ln<1e-4)continue;
+      const n=Math.max(1,Math.ceil(Ln/0.5));let rs=-1;
+      const emit=(i0,i1)=>{const t0=i0/n,t1=i1/n;out.push(ax+(bx-ax)*t0,ay+(by-ay)*t0,az+(bz-az)*t0,ax+(bx-ax)*t1,ay+(by-ay)*t1,az+(bz-az)*t1);};
+      for(let k=0;k<n;k++){const t=(k+.5)/n;const real=isRealEdge(ax+(bx-ax)*t,ay+(by-ay)*t,az+(bz-az)*t);
+        if(real){if(rs<0)rs=k;}else if(rs>=0){emit(rs,k);rs=-1;}}
+      if(rs>=0)emit(rs,n);
+    }
+  });
+  return new Float32Array(out);
+}
+
+/* ===== App ===== */
+const $=id=>document.getElementById(id);
+const V3=(x,y,z)=>new THREE.Vector3(x,y,z);
+const Y_UP=V3(0,1,0), ISO_DIR=V3(-190,150,210).normalize();
+const VIEWS={
+  front:{name:'المسقط الرأسي',en:'Front View',css:'#fb7185',dir:V3(0,0,1),obl:V3(.77,.64,0).normalize(),up:V3(0,1,0),axis:'z',w:125,h:62},
+  top:{name:'المسقط الأفقي',en:'Top View',css:'#34d399',dir:V3(0,1,0),obl:V3(.6,0,.8),up:V3(0,0,-1),axis:'y',w:125,h:77},
+  side:{name:'المسقط الجانبي',en:'Left Side View',css:'#fbbf24',dir:V3(-1,0,0),obl:V3(0,.6,.8),up:V3(0,1,0),axis:'x',w:77,h:62}
+};
+const INFO={
+  iso:{badge:'3D',css:'#d9b45b',title:'المجسم الكامل (منظور أيزومتري)',
+    desc:'قاعدة 125 × 62 بسمك 12، وجدار خلفي بسمك 12 وارتفاع كلي 62 بزاويتين علويتين R10، وضلع تقوية بسمك 12 يميل 30°، ونتوءان خلفيان 12 – 20 – 12 بعمق 15، مع ثقبين Ø12 في الجدار وثقبين Ø15 في القاعدة.',
+    steps:['اسحب بإصبعك أو بالماوس لتدوير المجسم.','اضغط على أحد الأسهم الملوّنة أو على أحد أزرار المساقط.','ستبدأ جولة قصيرة تُريك كيف يتحوّل المجسم إلى رسم 2D يمكنك رسمه مباشرة.']},
+  front:{badge:'رأسي',title:'المسقط الرأسي — النظر من جهة السهم الأحمر',
+    desc:'نرى وجه الجدار بأبعاده 125 × 62، وضلع التقوية كمستطيل عرضه 12، وثقبي Ø12 كدائرتين. أما ثقبا القاعدة Ø15 والنتوءان الخلفيان فتقع خلف الأسطح فتُرسم خطوطها متقطعة.',
+    steps:['ارسم مستطيلاً 125 × 62 ثم دوّر زاويتيه العلويتين بنصف قطر R10.','ارسم خطاً أفقياً على ارتفاع 12 من الأسفل (سمك القاعدة).','حدّد مركزي الثقبين: 20 من كل جانب و30 من الأعلى، ثم ارسم دائرتين Ø12.','ارسم ضلع التقوية في المنتصف بعرض 12 وارتفاع ≈ 28.9 فوق خط القاعدة (50 × tan 30°).','أضف الخطوط المتقطعة: ثقبا القاعدة Ø15 (على بُعد 15 من الجانبين) وحافتا النتوءين الخلفيين.']},
+  top:{badge:'أفقي',title:'المسقط الأفقي — النظر من الأعلى (السهم الأخضر)',
+    desc:'نرى القاعدة 125 × 62 وخلفها النتوءان 12 – 20 – 12 بعمق 15، وسمك الجدار 12، وثقبي القاعدة Ø15 كدائرتين، وضلع التقوية كشريط عرضه 12. ثقبا الجدار Ø12 مخفيان فيُرسمان متقطعين.',
+    steps:['ارسم مستطيل القاعدة 125 × 62 (الخلف إلى الأعلى).','أضف النتوءين الخلفيين 12 – 20 – 12 بعمق 15 خلف حافة الجدار.','ارسم خط سمك الجدار على بُعد 12 من الحافة الخلفية.','ارسم الدائرتين Ø15 على بُعد 15 من الحافة الأمامية و15 من كل جانب.','ارسم ضلع التقوية بعرض 12 من خط الجدار حتى الحافة الأمامية، وثقبي الجدار Ø12 بخطوط متقطعة.']},
+  side:{badge:'جانبي',title:'المسقط الجانبي الأيسر — النظر من اليسار (السهم الأصفر)',
+    desc:'نرى حرف L: الجدار بسمك 12 والقاعدة بسمك 12، والنتوءين الخلفيين بعمق 15 خلف الجدار، وضلع التقوية كمثلث يصنع 30° مع القاعدة. ثقب الجدار وثقب القاعدة مخفيان.',
+    steps:['ارسم مستطيلاً عرضه 27 (15 نتوء + 12 جدار) وارتفاعه 62 وخطاً رأسياً عند 15.','ارسم القاعدة بسمك 12 ممتدة حتى 62 من ظهر الجدار.','ارسم ضلع التقوية مثلثاً يميل 30° ويلتقي بالجدار على ارتفاع ≈ 28.9.','أضف المتقطع: ثقب الجدار Ø12 (30 من الأعلى) وثقب القاعدة Ø15 (15 من الحافة الأمامية).']}
+};
+
+let scene,camera,renderer,controls,holder,partGroup,arrowsGroup,gridHelper,hitMeshes=[],arrowWraps=[];
+let mainMat,visLines,hidLines,visMat,hidMat;
+let S={dir:ISO_DIR.clone(),H:184,fov:32,flat:0,up:Y_UP.clone(),extras:1};
+let flatAxis='z',mode='3d',currentView='iso',tl=null,tourInfo=null,isXRay=false,hovered=false;
+
+const isoH=()=>Math.max(184,168/camera.aspect);
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+function slerpDir(a,b,t){const q=new THREE.Quaternion().setFromUnitVectors(a,b);const p=new THREE.Quaternion().slerp(q,t);return a.clone().applyQuaternion(p).normalize();}
+
+function makeLabel(text,color){
+  const c=document.createElement('canvas');c.width=300;c.height=84;const g=c.getContext('2d');
+  g.fillStyle='rgba(8,12,24,.82)';const r=22;g.beginPath();g.moveTo(r,6);g.arcTo(294,6,294,78,r);g.arcTo(294,78,6,78,r);g.arcTo(6,78,6,6,r);g.arcTo(6,6,294,6,r);g.fill();
+  g.lineWidth=3;g.strokeStyle=color;g.stroke();
+  g.fillStyle='#fff';g.font='700 38px Cairo, Tahoma, sans-serif';g.textAlign='center';g.textBaseline='middle';g.direction='rtl';g.fillText(text,150,44);
+  const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));sp.scale.set(40,11.2,1);sp.renderOrder=20;return sp;
+}
+
+function buildScene(){
+  const geoms=buildPartGeometries();
+  mainMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.62,metalness:0,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1});
+  partGroup=new THREE.Group();partGroup.position.set(0,0,7.5);
+  geoms.forEach(g=>partGroup.add(new THREE.Mesh(g,mainMat)));
+  const eg=new THREE.BufferGeometry();eg.setAttribute('position',new THREE.BufferAttribute(buildEdgeArray(geoms),3));
+  visMat=new THREE.LineBasicMaterial({color:0x0b1220,transparent:true});
+  visLines=new THREE.LineSegments(eg,visMat);visLines.renderOrder=2;
+  hidMat=new THREE.LineDashedMaterial({color:0xfb7185,dashSize:3,gapSize:2.2,transparent:true,depthFunc:THREE.GreaterDepth});
+  hidLines=new THREE.LineSegments(eg,hidMat);hidLines.computeLineDistances();hidLines.visible=false;hidLines.renderOrder=2;
+  partGroup.add(visLines,hidLines);
+  holder=new THREE.Group();holder.add(partGroup);scene.add(holder);
+
+  scene.add(new THREE.HemisphereLight(0xffffff,0x7d879c,1.0));
+  scene.add(new THREE.AmbientLight(0xffffff,.35));
+  const k=new THREE.DirectionalLight(0xffffff,.85);k.position.set(-150,250,200);scene.add(k);
+  const fl=new THREE.DirectionalLight(0xffe4b0,.4);fl.position.set(220,90,-120);scene.add(fl);
+
+  gridHelper=new THREE.GridHelper(340,34,0xb8975a,0x3b3426);gridHelper.position.y=-31.6;
+  gridHelper.material.transparent=true;gridHelper.material.opacity=.5;gridHelper.material.depthWrite=false;gridHelper.renderOrder=-2;scene.add(gridHelper);
+
+  arrowsGroup=new THREE.Group();scene.add(arrowsGroup);
+  [{k:'front',c:0xfb7185,css:'#fb7185',d:V3(0,0,-1),tip:46},{k:'top',c:0x34d399,css:'#34d399',d:V3(0,-1,0),tip:40},{k:'side',c:0xfbbf24,css:'#fbbf24',d:V3(1,0,0),tip:72}].forEach(it=>{
+    const len=26,wrap=new THREE.Group();
+    wrap.userData={base:it.d.clone().multiplyScalar(-(it.tip+len)),dir:it.d.clone()};
+    const mat=new THREE.MeshStandardMaterial({color:it.c,emissive:it.c,emissiveIntensity:.35,roughness:.35});
+    const arrow=new THREE.Group();
+    const sh=new THREE.CylinderGeometry(1.7,1.7,15,16);sh.translate(0,7.5,0);
+    const hd=new THREE.ConeGeometry(5,11,24);hd.translate(0,20.5,0);
+    arrow.add(new THREE.Mesh(sh,mat),new THREE.Mesh(hd,mat));
+    arrow.quaternion.setFromUnitVectors(Y_UP,it.d);wrap.add(arrow);
+    const hit=new THREE.Mesh(new THREE.SphereGeometry(17,12,12),new THREE.MeshBasicMaterial({visible:false}));
+    hit.position.copy(it.d.clone().multiplyScalar(13));hit.userData.viewKey=it.k;wrap.add(hit);hitMeshes.push(hit);
+    const lab=makeLabel(VIEWS[it.k].name,it.css);lab.position.copy(it.d.clone().multiplyScalar(-12));wrap.add(lab);
+    wrap.position.copy(wrap.userData.base);arrowsGroup.add(wrap);arrowWraps.push(wrap);
+  });
+}
+
+function applyState(){
+  const dist=S.H/(2*Math.tan(THREE.MathUtils.degToRad(S.fov)/2));
+  camera.fov=S.fov;camera.near=Math.max(1,dist-230);camera.far=dist+280;
+  camera.up.copy(S.up);camera.position.copy(S.dir).multiplyScalar(dist);camera.lookAt(0,0,0);camera.updateProjectionMatrix();
+  holder.scale.set(1,1,1);holder.scale[flatAxis]=1-.985*S.flat;
+  gridHelper.material.opacity=.5*S.extras;gridHelper.visible=S.extras>.02;
+  arrowsGroup.visible=S.extras>.02;arrowsGroup.scale.setScalar(Math.max(S.extras,.001));
+}
+function syncState(){
+  const off=camera.position.clone().sub(controls.target),d=off.length();
+  S.dir.copy(off).normalize();S.fov=camera.fov;S.H=2*d*Math.tan(THREE.MathUtils.degToRad(S.fov)/2);S.up.copy(Y_UP);S.flat=0;S.extras=1;
+}
+function runTimeline(segs,done){tl={segs,idx:-1,done};nextSeg(performance.now());}
+function nextSeg(now){
+  tl.idx++;
+  if(tl.idx>=tl.segs.length){const d=tl.done;tl=null;d&&d();return;}
+  const s=tl.segs[tl.idx];tl.t0=now;
+  tl.from={dir:S.dir.clone(),H:S.H,fov:S.fov,flat:S.flat,up:S.up.clone(),extras:S.extras};
+  s.onStart&&s.onStart();
+}
+function stepTimeline(now){
+  const s=tl.segs[tl.idx],fr=tl.from,to=s.to;
+  const p=Math.min(1,(now-tl.t0)/s.dur),e=ease(p),lp=(a,b)=>a+(b-a)*e;
+  if(to.dir)S.dir=slerpDir(fr.dir,to.dir,e);
+  if(to.H!==undefined)S.H=lp(fr.H,to.H);
+  if(to.fov!==undefined)S.fov=lp(fr.fov,to.fov);
+  if(to.flat!==undefined)S.flat=lp(fr.flat,to.flat);
+  if(to.extras!==undefined)S.extras=lp(fr.extras,to.extras);
+  if(to.up)S.up=fr.up.clone().lerp(to.up,e).normalize();
+  applyState();
+  if(p>=1)nextSeg(now);
+}
+function oblique(V){return V.dir.clone().multiplyScalar(Math.cos(.62)).add(V.obl.clone().multiplyScalar(Math.sin(.62))).normalize();}
+
+/* ---- Tour ---- */
+function startTour(key){
+  const V=VIEWS[key];if(!V)return;
+  hideOverlay();
+  if(mode==='3d'&&!tl)syncState();
+  mode='tour';controls.enabled=false;
+  const prevKey=currentView;currentView=key;updateUI(key);
+  document.body.classList.add('touring');
+  const asp=camera.aspect,Hf=Math.max(V.h*1.55,V.w*1.35/asp);
+  tourInfo={key,H:Hf};
+  const segs=[];
+  if(S.flat>.01&&VIEWS[prevKey])segs.push({dur:800,to:{flat:0,dir:oblique(VIEWS[prevKey]),fov:24,up:Y_UP.clone()}});
+  segs.push({dur:1300,to:{dir:oblique(V),H:Hf*1.25,fov:24,extras:0,up:Y_UP.clone(),flat:0},onStart:()=>setStep(1,V)});
+  segs.push({dur:1100,to:{flat:1},onStart:()=>{flatAxis=V.axis;setStep(2,V);}});
+  segs.push({dur:1500,to:{dir:V.dir.clone(),H:Hf,fov:2.5,up:V.up.clone()},onStart:()=>setStep(3,V)});
+  showTourBar(V);
+  runTimeline(segs,()=>{showOverlay();});
+  const st=$('stage').getBoundingClientRect();if(st.top<60||st.bottom>innerHeight)$('stage').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function skipTour(){
+  if(mode!=='tour'||!tl||!tourInfo)return;
+  const V=VIEWS[tourInfo.key];tl=null;flatAxis=V.axis;
+  S.dir.copy(V.dir);S.up.copy(V.up);S.flat=1;S.H=tourInfo.H;S.fov=2.5;S.extras=0;applyState();showOverlay();
+}
+function backTo3D(){
+  hideOverlay();hideTourBar();
+  if(mode==='3d'&&!tl)syncState();
+  const prev=VIEWS[currentView],segs=[];
+  if(S.flat>.01&&prev)segs.push({dur:900,to:{flat:0,dir:oblique(prev),fov:24,up:Y_UP.clone()}});
+  segs.push({dur:1200,to:{dir:ISO_DIR.clone(),H:isoH(),fov:32,extras:1,up:Y_UP.clone(),flat:0}});
+  mode='tour';controls.enabled=false;currentView='iso';tourInfo=null;updateUI('iso');
+  document.body.classList.remove('touring');
+  runTimeline(segs,()=>{controls.target.set(0,0,0);controls.enabled=true;mode='3d';});
+}
+function setStep(n,V){
+  const t={1:`نقف في اتجاه السهم وننظر إلى المجسم من جهة <b>${V.name}</b>.`,2:'نُسقِط العمق: كل نقطة تنزلق عمودياً على المستوى فيتحوّل المجسم إلى شكل مسطّح.',3:'نواجه الشكل مباشرةً: هذا هو الرسم ثنائي الأبعاد (2D) الذي ستنقله إلى ورقتك.'}[n];
+  $('tour-text').innerHTML=t;
+  document.querySelectorAll('#tour-dots i').forEach((d,i)=>d.classList.toggle('on',i<n));
+  $('tour-n').textContent=n+'/3';
+}
+function showTourBar(V){$('tour-chip').textContent=V.name;$('tour-chip').style.setProperty('--c',V.css);$('tour-bar').classList.add('show');$('hint').classList.add('gone');}
+function hideTourBar(){$('tour-bar').classList.remove('show');}
+function showOverlay(){
+  const V=VIEWS[tourInfo.key];mode='2d';hideTourBar();
+  $('v2d-title').textContent=V.name;$('v2d-en').textContent=V.en+' • 2D';
+  $('v2d-badge').style.setProperty('--c',V.css);
+  renderOverlaySVG();$('v2d').classList.add('show');
+}
+function renderOverlaySVG(){
+  if(!tourInfo)return;
+  const r=viewSVGInner(tourInfo.key,innerWidth<640?6.6:4.6),svg=$('v2d-svg');
+  svg.setAttribute('viewBox',r.vb.join(' '));svg.innerHTML=r.html;
+}
+function hideOverlay(){$('v2d').classList.remove('show');}
+
+function updateUI(key){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===key));
+  document.querySelectorAll('.vgrp').forEach(g=>g.classList.toggle('active',g.dataset.view===key));
+  document.querySelectorAll('.qbtn').forEach(b=>b.classList.toggle('active',b.dataset.view===key));
+  const i=INFO[key],V=VIEWS[key];
+  const bd=$('exp-icon');bd.textContent=i.badge;bd.style.setProperty('--c',V?V.css:i.css);
+  $('exp-title').textContent=i.title;$('exp-desc').textContent=i.desc;
+  $('exp-steps-title').textContent=key==='iso'?'طريقة الاستخدام':'خطوات رسمه مباشرة';
+  $('exp-steps').innerHTML=i.steps.map(s=>`<li>${s}</li>`).join('');
+}
+function toggleXRay(){
+  isXRay=!isXRay;
+  mainMat.transparent=isXRay;mainMat.opacity=isXRay?.14:1;mainMat.needsUpdate=true;
+  hidLines.visible=isXRay;visMat.color.set(isXRay?0xf3d98f:0x0b1220);
+  $('btn-xray').classList.toggle('active',isXRay);
+  $('xray-label').textContent=isXRay?'إيقاف الخطوط المخفية':'إظهار الخطوط المخفية';
+}
+function toggleDims(){
+  const off=document.body.classList.toggle('no-dims');
+  $('btn-dims').classList.toggle('active',!off);
+  $('dims-label').textContent=off?'إظهار الأبعاد':'إخفاء الأبعاد';
+}
+
+/* ---- Pointer ---- */
+const ray=new THREE.Raycaster(),mouse=new THREE.Vector2();let downPt=null;
+function pick(e){const r=renderer.domElement.getBoundingClientRect();mouse.x=((e.clientX-r.left)/r.width)*2-1;mouse.y=-((e.clientY-r.top)/r.height)*2+1;ray.setFromCamera(mouse,camera);const h=ray.intersectObjects(hitMeshes);return h.length?h[0].object.userData.viewKey:null;}
+function onMove(e){
+  if(mode!=='3d')return;
+  const k=pick(e),b=$('hover-badge');
+  if(k){renderer.domElement.style.cursor='pointer';b.textContent='اضغط لعرض '+VIEWS[k].name;b.classList.add('show');}
+  else{renderer.domElement.style.cursor='grab';b.classList.remove('show');}
+}
+function onResize(){
+  const c=$('canvas-container'),w=c.clientWidth,h=c.clientHeight;if(!w||!h)return;
+  renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+}
+function animate(now){
+  requestAnimationFrame(animate);
+  if(tl)stepTimeline(now);
+  else if(mode==='3d'){
+    controls.update();
+    const t=now*.003;
+    arrowWraps.forEach((w,i)=>w.position.copy(w.userData.base).addScaledVector(w.userData.dir,Math.sin(t+i)*2.2));
+  } else if(mode==='2d')return;
+  renderer.render(scene,camera);
+}
+
+function init(){
+  $('sheet-holder').innerHTML=sheetSVG();
+  try{
+    const c=$('canvas-container');
+    scene=new THREE.Scene();
+    camera=new THREE.PerspectiveCamera(32,c.clientWidth/c.clientHeight,1,3000);
+    renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputEncoding=THREE.sRGBEncoding;
+    renderer.setSize(c.clientWidth,c.clientHeight,false);c.appendChild(renderer.domElement);
+    buildScene();
+    S.H=isoH();applyState();
+    controls=new THREE.OrbitControls(camera,renderer.domElement);
+    controls.enableDamping=true;controls.dampingFactor=.07;controls.enablePan=false;controls.minDistance=120;controls.maxDistance=700;
+    renderer.domElement.addEventListener('pointermove',onMove);
+    renderer.domElement.addEventListener('pointerdown',e=>{downPt={x:e.clientX,y:e.clientY};$('hint').classList.add('gone');});
+    renderer.domElement.addEventListener('pointerup',e=>{
+      if(!downPt||mode!=='3d')return;
+      if(Math.hypot(e.clientX-downPt.x,e.clientY-downPt.y)<7){const k=pick(e);if(k)startTour(k);}
+      downPt=null;
+    });
+    new ResizeObserver(onResize).observe(c);addEventListener('resize',()=>{if(mode==='2d')renderOverlaySVG();});
+    requestAnimationFrame(animate);
+  }catch(err){
+    $('canvas-container').innerHTML='<div class="nogl">تعذّر تشغيل العرض ثلاثي الأبعاد على هذا الجهاز (WebGL). يمكنك مع ذلك الضغط على أي مسقط لعرضه ثنائي الأبعاد.</div>';
+    controls={enabled:false,target:V3(0,0,0),update(){}};
+    window.startTour=function(k){tourInfo={key:k,H:1};currentView=k;updateUI(k);showOverlay();};
+    window.backTo3D=function(){hideOverlay();currentView='iso';updateUI('iso');};
+    console.error(err);
+  }
+  document.querySelectorAll('[data-view]').forEach(el=>{
+    if(el.classList.contains('vgrp'))el.addEventListener('click',()=>startTour(el.dataset.view));
+  });
+  document.querySelectorAll('.tab,.qbtn').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.view;k==='iso'?backTo3D():startTour(k);}));
+  $('btn-xray').addEventListener('click',()=>renderer&&toggleXRay());
+  $('btn-dims').addEventListener('click',toggleDims);
+  $('v2d-back').addEventListener('click',backTo3D);
+  $('v2d-replay').addEventListener('click',()=>startTour(tourInfo.key));
+  $('tour-skip').addEventListener('click',skipTour);
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&mode==='2d')backTo3D();});
+  updateUI('iso');
+}
+window.addEventListener('load',init);
+
+</script>
 </body>
 </html>
